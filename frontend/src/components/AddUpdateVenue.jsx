@@ -27,7 +27,7 @@ function AddUpdateVenue() {
         dispatchVenues({ type: "FETCH_FAILURE" });
       }
     }
-  }, []);
+  }, [id]);
   const performClick = (evt) => {
     evt.preventDefault();
   };

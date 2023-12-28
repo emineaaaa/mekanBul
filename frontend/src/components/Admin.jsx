@@ -29,8 +29,13 @@ function Admin() {
         state: { action: "new" },
       });
     } else if (evt.target.name === "Güncelle") {
-      return navigate('/admin/addupdate/venue/:id', {
+      return navigate(`/admin/addupdate/venue/${id}`, {
         state: { action: "update" },
+      });
+    }else if (evt.target.name==="Sil"){
+      VenueDataService.removeVenue(id).then(() => {
+        dispatchVenues({ type: "REMOVE_VENUE" });
+        
       });
     }
   }
