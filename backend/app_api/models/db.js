@@ -1,5 +1,5 @@
 var mongoose = require("mongoose");
-var dbURI="mongodb://localhost/mekanbul"
+var dbURI="mongodb+srv://emine:Hh2003.e.a@mekanbul.niidkou.mongodb.net/"
 mongoose.connect(dbURI);
 mongoose.connection.on("connected", function () {
   console.log("Mongoose " + dbURI + " adresindeki veritabanına bağlandı\n");

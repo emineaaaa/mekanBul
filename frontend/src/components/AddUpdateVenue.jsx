@@ -1,16 +1,19 @@
 import React from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate, json } from "react-router-dom";
 import AdminButton from "./AdminButton";
 import Header from "./Header";
 import VenueReducer from "../services/VenueReducer";
 import VenueDataService from "../services/VenueDataService";
+import Venue from "./Venue";
 function AddUpdateVenue() {
   const { id } = useParams();
+  var navigate = useNavigate();
   let location = useLocation();
   const [venue, dispatchVenues] = React.useReducer(VenueReducer, {
     data: [],
     isLoading: false,
     isSuccess: false,
+    isvenueError:false,
     isError: false,
   });
   React.useEffect(() => {
@@ -27,10 +30,89 @@ function AddUpdateVenue() {
         dispatchVenues({ type: "FETCH_FAILURE" });
       }
     }
-  }, [id]);
-  const performClick = (evt) => {
-    evt.preventDefault();
+  },[id]);
+
+    
+
+  const onSubmit = (evt) => {
+    const formData = evt.target.elements;               //form verilerini aldık
+    evt.preventDefault();                              //sayfanın yeniden yüklenmesini engelledik
+   
+    if(location.state.action=="new"){                  //burada doğrulama ve kontrol yapılır. if kısmında Yeni mekanın oluşturulması için gerekli kodlar bulunur else kısmında ise eksik veya hatalı veri varsa işlem yapılır.
+    if (
+      formData.name.value&&
+      formData.address.value&&
+      formData.foodanddrink.value&&
+      formData.coordinates.value&&
+      formData.day1.value&&
+      formData.openclose1.value&&
+      formData.day2.value&&
+      formData.openclose2.value
+    ) {
+      var newVenue = {                                     //yeni mekan nesnesi oluşturduk
+        name: formData.name.value,
+        address: formData.address.value,
+        foodanddrink: formData.foodanddrink.value,
+        lat: formData.coordinates ? formData.coordinates.value.split(',')[0] : '',
+        long: formData.coordinates ? formData.coordinates.value.split(',')[1] : '',
+        day1: formData.day1.value,
+        open1: formData.openclose1 ? formData.openclose1.value.split(',')[0] : '',
+        close1: formData.openclose1 ? formData.openclose1.value.split(',')[1] : '',
+        day2: formData.day2.value,
+        open2: formData.openclose2 ? formData.openclose2.value.split(',')[0] : '',
+        close2: formData.openclose2 ? formData.openclose2.value.split(',')[1] : '',
+      };
+      
+      VenueDataService.addVenue(newVenue).then(() => {
+        dispatchVenues({ type: "ADD_VENUE_SUCCESS" });          //mekanın başarıyla eklendiğini bildirmek ve mekanların durumunu güncellemek içindir. 
+        navigate(`/`)                                            //kullanıcıyı anasayfaya yönlendirmek için
+       
+      });
+    } else {
+      dispatchVenues({ type: "VENUE_FAILURE" });                 // işlemin başarısız olduğunu bildirir ve durumu güncellemek içindir.hata mesajını venue failure ile yazdırdık.
+    }
+    
+  }
+  
+  else if(location.state.action=="update"){
+    if (
+      formData.name.value&&
+      formData.address.value&&
+      formData.foodanddrink.value&&
+      formData.coordinates.value&&
+      formData.day1.value&&
+      formData.openclose1.value&&
+      formData.day2.value&&
+      formData.openclose2.value
+    ) {
+      var updateVenue = {
+        name: formData.name.value,
+        address: formData.address.value,
+        foodanddrink: formData.foodanddrink.value,
+        lat: formData.coordinates ? formData.coordinates.value.split(',')[0] : '',
+        long: formData.coordinates ? formData.coordinates.value.split(',')[1] : '',
+        day1: formData.day1.value,
+        open1: formData.openclose1 ? formData.openclose1.value.split(',')[0] : '',
+        close1: formData.openclose1 ? formData.openclose1.value.split(',')[1] : '',
+        day2: formData.day2.value,
+        open2: formData.openclose2 ? formData.openclose2.value.split(',')[0] : '',
+        close2: formData.openclose2 ? formData.openclose2.value.split(',')[1] : '',
+      };
+      
+      VenueDataService.updateVenue(id,updateVenue).then(() => {
+        dispatchVenues({ type: "ADD_VENUE_SUCCESS" });
+        navigate(`/`)
+      });
+    } else {
+      dispatchVenues({ type: "VENUE_FAILURE" });
+     
+    }
+  }
+ 
   };
+  
+  
+  
   return (
     <>
       {location.state.action == "new" ?(
@@ -43,10 +125,18 @@ function AddUpdateVenue() {
       ):(
         <Header headerText="Yönetici" />
       )
-      )}
+      ) }
+      {venue.isvenueError &&(
+        <>
+        <div className="error-header">
+          {" "}
+          <b>Tüm Alanlar zorunldur</b>
+        </div>
+        </>
+      ) }
 
       <div className="col-xs-12 col-md-6">
-        <form className="form-horizontal" id="addVenue" onSubmit={performClick}>
+        <form className="form-horizontal" id="addVenue" onSubmit={(evt) => onSubmit(evt)}>
           <div className="form-group">
             <label className="col-xs-10 col-sm-2 control-label">Ad:</label>
             <div className="col-xs-12 col-sm-10">
@@ -54,6 +144,7 @@ function AddUpdateVenue() {
                 className="form-control"
                 name="name"
                 defaultValue={venue.data.name ? venue.data.name : ""}
+              
               />
             </div>
           </div>
@@ -156,7 +247,7 @@ function AddUpdateVenue() {
             </div>
           </div>
           {venue.data.name ? (
-            <AdminButton name="Güncelle" type="primary" />
+            <AdminButton name="Güncelle" type="primary"  />
           ) : (
             <AdminButton name="Ekle" type="primary" />
           )}

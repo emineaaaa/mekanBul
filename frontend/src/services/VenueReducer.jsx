@@ -27,6 +27,13 @@ const VenueReducer = (state, action) => {
         ...state,
         isSuccess: false,
       };
+
+    case "VENUE_FAILURE":
+      return{
+       ...state, 
+       isvenueError:true,
+      };
+
     case "LOGIN_SUCCESS":
       return {
         ...state,
